@@ -13,14 +13,10 @@
 ## 安装方法
 ```
 
-curl -O https://github.com/alextend/php-setup-robot/blob/centos-offline/setup.sh && chmod +x setup.sh && ./setup.sh
-```
+git clone -b centos-offline https://github.com/alextend/php-setup-robot.git
+cd php-setup-rebot
 
-或
-
-```
-curl -sSL https://github.com/alextend/php-setup-robot/blob/centos-offline/setup.sh | bash
-
+chmod +x setup.sh && ./setup.sh
 
 ```
 

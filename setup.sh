@@ -21,12 +21,26 @@ setupCheck(){
     fi
 }
 
-if [ -f /etc/init.d/php-fpm ];then
-	mv /etc/init.d/php-fpm /etc/init.d/php-fpm.bak
+if [ -f /etc/init.d/php73-fpm ];then
+	mv /etc/init.d/php73-fpm /etc/init.d/php73-fpm.bak
 fi
-yum -y install vim  gettext-devel libpng-devel gcc gcc-c++ libxml2-devel flex perl-DBI \
+
+yum install -y centos-release-scl
+yum install -y devtoolset-6-gcc-c++
+mv /usr/bin/gcc /usr/bin/gcc-4.4.7
+mv /usr/bin/g++ /usr/bin/g++-4.4.7
+mv /usr/bin/c++ /usr/bin/c++-4.4.7
+ln -s /opt/rh/devtoolset-6/root/usr/bin/gcc /usr/bin/gcc
+ln -s /opt/rh/devtoolset-6/root/usr/bin/c++ /usr/bin/c++
+ln -s /opt/rh/devtoolset-6/root/usr/bin/g++ /usr/bin/g++
+
+yum -y install vim wget gettext-devel libpng-devel gcc gcc-c++ libxml2-devel flex perl-DBI \
     ncurses-devel mysql-devel openssl openssl-devel libtool-ltdl* libtool unzip \
-    libXpm-devel readline-devel libedit-devel
+    libXpm-devel readline-devel libedit-devel freetype-devel 
+
+wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/tls/cert.pem --no-check-certificate
+
+yum upgrade -y
 
 ###########curl#########
 tar xf curl-7.67.0.tar.gz
@@ -82,19 +96,20 @@ make && make install
 installCheck
 cd ../
 
+
 ########## lib freetype ##########
-tar xf freetype-2.10.0.tar.gz
-cd freetype-2.10.0
-./configure --prefix=/usr/local/freetype/2.10.0
+tar xf freetype-2.6.3.tar.gz
+cd freetype-2.6.3
+./configure --prefix=/usr/local/freetype/2.6.3
 make && make install
 make clean
 cd ../
 
 
 ########## gd ##########
-tar xf libgd-2.2.5.tar.gz
-cd libgd-2.2.5
-./configure --prefix=/usr/local/libgd/2.2.5 --with-freetype=/usr/local/freetype/2.10.0 --with-jpeg=/usr/local/libjpeg/9c --with-png=/usr/local/libpng/1.6.37
+tar xf libgd-2.1.1.tar.gz
+cd libgd-2.1.1
+./configure --prefix=/usr/local/libgd/2.1.1 --with-freetype=/usr/local/freetype/2.6.3 --with-jpeg=/usr/local/libjpeg/9c --with-png=/usr/local/libpng/1.6.37
 make && make install
 installCheck
 cd ../
@@ -115,7 +130,7 @@ cd php-7.3.13
 # mcrypt已弃用
 ./configure \
     --prefix=/usr/local/php/7.3.13 \
-    --enable-fpm --with-config-file-path=/usr/local/etc/php \
+    --enable-fpm --with-config-file-path=/usr/local/etc/php73 \
     --enable-wddx --enable-ftp --enable-sockets --enable-mbstring \
     --enable-bcmath --enable-soap --enable-json \
     --with-readline --with-libedit --with-openssl --enable-pcntl --enable-exif \
@@ -125,13 +140,23 @@ cd php-7.3.13
     --with-png-dir=/usr/local/libpng/1.6.37 \
     --with-zlib-dir=/usr/local/zlib/1.2.11 \
     --with-gettext=/usr/local/gettext/0.20.1 \
-    --with-freetype-dir=/usr/local/freetype/2.10.0 \
-    --with-gd=/usr/local/libgd/2.2.5
+    --with-freetype-dir=/usr/local/freetype/2.6.3 \
+    --with-gd=/usr/local/libgd/2.1.1
 
 make && make install
 installCheck
 cd ../
 
+
+
+#######autoconf#####
+rpm -e --nodeps autoconf-2.63
+tar -zxvf autoconf-2.69.tar.gz
+cd autoconf-2.69
+mkdir -p /usr/local/autoconf
+./configure && make && make install
+installCheck
+cd ../
 
 
 #######memcached#####
@@ -156,9 +181,9 @@ cd ../
 
 
 #########rabbitmq-c######################
-tar zxf rabbitmq-c-0.10.0.tar.gz
-cd rabbitmq-c-0.10.0
-./configure --prefix=/usr/local/rabbitmq-c/0.10.0
+tar zxf rabbitmq-c-0.8.0.tar.gz
+cd rabbitmq-c-0.8.0
+./configure --prefix=/usr/local/rabbitmq-c/0.8.0
 make && make install
 installCheck
 cd ../
@@ -168,7 +193,7 @@ cd ../
 tar zxf amqp-1.9.4.tgz
 cd amqp-1.9.4
 /usr/local/php/7.3.13/bin/phpize
-./configure --with-php-config=/usr/local/php/7.3.13/bin/php-config --with-amqp --with-librabbitmq-dir=/usr/local/rabbitmq-c/0.10.0
+./configure --with-php-config=/usr/local/php/7.3.13/bin/php-config --with-amqp --with-librabbitmq-dir=/usr/local/rabbitmq-c/0.8.0
 make && make install
 installCheck
 cd ../
@@ -182,9 +207,13 @@ make && make install
 installCheck
 cd ../../../
 
+
 #############swoole###########
-tar zxf swoole-src-4.4.14.tar.gz
-cd swoole-src-4.4.14
+/usr/local/php/7.3.13/bin/pecl clear-cache
+/usr/local/php/7.3.13/bin/pecl channel-upgrade
+
+tar zxf swoole-src-4.4.12.tar.gz
+cd swoole-src-4.4.12
 /usr/local/php/7.3.13/bin/phpize
 ./configure --with-php-config=/usr/local/php/7.3.13/bin/php-config
 make && make install
@@ -200,18 +229,19 @@ installCheck
 cd ../
 
 
-ln -s /usr/local/lib/libpcre.so.1 /lib64/libpcre.so.1
+ln -s /usr/local/lib/libpcre.so.1 /lib64/libpcre.so.1 
 [ ! -d /data/logs/php ] && mkdir /data/logs/php -p
+[ ! -d /data/logs/php73 ] && mkdir /data/logs/php73 -p
 [ ! -d /data/logs/www ] && mkdir /data/logs/www -p
 
-if [ -d /usr/local/etc/php ];then
-	mv /usr/local/etc/php /usr/local/etc/php.bak
+if [ -d /usr/local/etc/php73 ];then
+	mv /usr/local/etc/php73 /usr/local/etc/php73.bak
 fi
-# \cp -r conf/php_conf /usr/local/etc/php
-\cp init.d/php-fpm /etc/init.d/php-fpm
-chmod +x /etc/init.d/php-fpm
+\cp -r conf/php_conf /usr/local/etc/php73
+\cp init.d/php-fpm /etc/init.d/php73-fpm
+chmod +x /etc/init.d/php73-fpm
 
-#/etc/init.d/php-fpm start
-#/etc/init.d/nginx start
+# /etc/init.d/php73-fpm start
 
 setupCheck
+
