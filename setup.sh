@@ -38,9 +38,12 @@ yum -y install vim wget gettext-devel libpng-devel gcc gcc-c++ libxml2-devel fle
     ncurses-devel mysql-devel openssl openssl-devel libtool-ltdl* libtool unzip \
     libXpm-devel readline-devel libedit-devel freetype-devel 
 
-wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/tls/cert.pem --no-check-certificate
+
+[ ! -f /etc/pki/tls/cert.pem ] && \
+    wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/tls/cert.pem --no-check-certificate
 
 yum upgrade -y
+
 
 ###########curl#########
 tar xf curl-7.67.0.tar.gz
@@ -132,7 +135,7 @@ cd php-7.3.13
     --prefix=/usr/local/php/7.3.13 \
     --enable-fpm --with-config-file-path=/usr/local/etc/php73 \
     --enable-wddx --enable-ftp --enable-sockets --enable-mbstring \
-    --enable-bcmath --enable-soap --enable-json \
+    --enable-bcmath --enable-soap --enable-json --enable-zip \
     --with-readline --with-libedit --with-openssl --enable-pcntl --enable-exif \
     --with-curl=/usr/local/curl/7.67.0/ \
     --with-iconv=/usr/local/libiconv/1.16 \
@@ -147,6 +150,14 @@ make && make install
 installCheck
 cd ../
 
+
+#########zip#########
+# cd php-7.3.13/ext/zip/
+# /usr/local/php/7.3.13/bin/phpize
+# ./configure --with-php-config=/usr/local/php/7.3.13/bin/php-config
+# make && make install
+# installCheck
+# cd ../../../
 
 
 #######autoconf#####
