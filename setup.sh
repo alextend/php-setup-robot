@@ -251,6 +251,7 @@ if [ -d /usr/local/etc/php73 ];then
 fi
 \cp -r conf/php_conf /usr/local/etc/php73
 \cp init.d/php-fpm /etc/init.d/php73-fpm
+\cp /usr/local/php/7.3.13/bin/php /usr/bin/php73
 chmod +x /etc/init.d/php73-fpm
 
 # /etc/init.d/php73-fpm start
