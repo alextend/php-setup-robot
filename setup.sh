@@ -136,6 +136,7 @@ cd php-7.3.13
     --enable-fpm --with-config-file-path=/usr/local/etc/php73 \
     --enable-wddx --enable-ftp --enable-sockets --enable-mbstring \
     --enable-bcmath --enable-soap --enable-json --enable-zip \
+    --with-mysqli --with-pdo-mysql \
     --with-readline --with-libedit --with-openssl --enable-pcntl --enable-exif \
     --with-curl=/usr/local/curl/7.67.0/ \
     --with-iconv=/usr/local/libiconv/1.16 \
